@@ -49,7 +49,7 @@ export default function AccountPage() {
 
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-3">
-                <h1 className="text-[19px] font-semibold uppercase tracking-wide">WONG KAI JENG</h1>
+                <h1 className="text-[19px] font-semibold uppercase tracking-wide">Bob Larrie</h1>
                 <button className="rounded-full border border-white px-4 py-1.5 text-sm font-semibold">
                   Edit
                 </button>
@@ -60,7 +60,7 @@ export default function AccountPage() {
                 <div className="mt-1 flex items-center justify-between gap-3">
                   <div>
                     <p className="text-[11px] text-white/70">DuitNow</p>
-                    <p className="text-[18px] font-semibold tracking-wide">130037567479</p>
+                    <p className="text-[18px] font-semibold tracking-wide">111222333444</p>
                   </div>
                   <button className="text-2xl text-white/80" aria-label="Copy account number">
                     ⧉

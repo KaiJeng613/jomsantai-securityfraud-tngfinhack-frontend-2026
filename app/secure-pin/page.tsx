@@ -1,13 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { KeyboardEvent, useMemo, useRef, useState } from "react";
 import { pinService } from "@/lib/api/pinService";
 
 const PLACEHOLDER_API_HOST = "your-api-gateway-url.execute-api.region.amazonaws.com";
 const PIN_LENGTH = 6;
 
 type PinStage = "set" | "confirm";
+
+type TimingState = {
+  entryStartTime: number | null;
+  lastKeyDownTime: number | null;
+  lastKeyUpTime: number | null;
+  interKeyDelays: number[];
+  holdDurations: number[];
+  totalEntryDuration: number;
+};
+
+const createEmptyTimingState = (): TimingState => ({
+  entryStartTime: null,
+  lastKeyDownTime: null,
+  lastKeyUpTime: null,
+  interKeyDelays: [],
+  holdDurations: [],
+  totalEntryDuration: 0,
+});
 
 function PinBoxes({
   value,
@@ -46,8 +64,13 @@ export default function SecurePinPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [timingState, setTimingState] = useState<TimingState>(createEmptyTimingState);
   const setPinInputRef = useRef<HTMLInputElement>(null);
   const confirmPinInputRef = useRef<HTMLInputElement>(null);
+  const userAgentData =
+    typeof navigator !== "undefined"
+      ? (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData
+      : undefined;
 
   const isApiConfigured = useMemo(() => {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
@@ -60,22 +83,85 @@ export default function SecurePinPage() {
     targetRef.current?.focus();
   };
 
+  const handleSetPinKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (!/^\d$/.test(event.key) && event.key !== "Backspace") {
+      return;
+    }
+
+    const now = performance.now();
+
+    setTimingState((current) => {
+      const nextState = { ...current };
+
+      if (pin.length === 0 && event.key !== "Backspace") {
+        nextState.entryStartTime = now;
+        nextState.interKeyDelays = [];
+        nextState.holdDurations = [];
+        nextState.totalEntryDuration = 0;
+      }
+
+      if (event.key !== "Backspace" && current.lastKeyUpTime !== null) {
+        nextState.interKeyDelays = [
+          ...current.interKeyDelays,
+          Math.round(now - current.lastKeyUpTime),
+        ].slice(0, PIN_LENGTH - 1);
+      }
+
+      nextState.lastKeyDownTime = now;
+      return nextState;
+    });
+  };
+
+  const handleSetPinKeyUp = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (!/^\d$/.test(event.key) && event.key !== "Backspace") {
+      return;
+    }
+
+    const now = performance.now();
+
+    setTimingState((current) => {
+      const nextState = { ...current };
+
+      if (event.key !== "Backspace" && current.lastKeyDownTime !== null) {
+        nextState.holdDurations = [
+          ...current.holdDurations,
+          Math.round(now - current.lastKeyDownTime),
+        ].slice(0, PIN_LENGTH);
+      }
+
+      nextState.lastKeyUpTime = now;
+      return nextState;
+    });
+  };
+
   const handlePinChange = (stage: PinStage, rawValue: string) => {
     const nextValue = rawValue.replace(/\D/g, "").slice(0, PIN_LENGTH);
 
     if (stage === "set") {
+      if (nextValue.length < pin.length) {
+        setTimingState(createEmptyTimingState());
+      }
+
       setPin(nextValue);
+
       if (nextValue.length === PIN_LENGTH) {
+        setTimingState((current) => ({
+          ...current,
+          totalEntryDuration: current.entryStartTime
+            ? Math.round(performance.now() - current.entryStartTime)
+            : current.totalEntryDuration,
+        }));
         setActiveStage("confirm");
         confirmPinInputRef.current?.focus();
       }
+
       return;
     }
 
     setConfirmPin(nextValue);
   };
 
-  const handleContinue = async () => {
+  const handleSubmit = async () => {
     setMessage("");
     setError("");
 
@@ -90,24 +176,41 @@ export default function SecurePinPage() {
     }
 
     if (!isApiConfigured) {
-      setError("Set NEXT_PUBLIC_API_BASE_URL and NEXT_PUBLIC_API_KEY before calling the Lambda API.");
+      setError("Set NEXT_PUBLIC_API_BASE_URL and NEXT_PUBLIC_API_KEY before calling the API.");
       return;
     }
 
     setIsSubmitting(true);
 
     const response = await pinService.createPin({
-      userId: "demo-user-001",
-      pin,
+      session_id: crypto.randomUUID(),
+      user_id: "demo-user-001",
+      device: {
+        platform: /android/i.test(navigator.userAgent) ? "android" : "web",
+        os_version: userAgentData?.platform || navigator.platform || "unknown",
+        device_model: navigator.userAgent,
+      },
+      location: {
+        country_code: "MY",
+        latitude: 3.139,
+        longitude: 101.687,
+      },
+      keystroke_dynamics: {
+        pin_length: PIN_LENGTH,
+        inter_key_delays_ms: timingState.interKeyDelays,
+        hold_durations_ms: timingState.holdDurations,
+        total_entry_duration_ms: timingState.totalEntryDuration,
+      },
     });
 
     setIsSubmitting(false);
 
     if (response.success) {
-      setMessage(response.data?.message || "Secure PIN saved successfully.");
+      setMessage(response.data?.message || "Secure PIN submitted successfully.");
       setPin("");
       setConfirmPin("");
       setActiveStage("set");
+      setTimingState(createEmptyTimingState());
       setPinInputRef.current?.focus();
       return;
     }
@@ -160,6 +263,8 @@ export default function SecurePinPage() {
           ref={setPinInputRef}
           value={pin}
           onChange={(event) => handlePinChange("set", event.target.value)}
+          onKeyDown={handleSetPinKeyDown}
+          onKeyUp={handleSetPinKeyUp}
           inputMode="numeric"
           autoComplete="one-time-code"
           className="sr-only"
@@ -200,11 +305,15 @@ export default function SecurePinPage() {
         <div className="mt-auto pt-10">
           <button
             type="button"
-            onClick={handleContinue}
+            onClick={handleSubmit}
             disabled={!isReady || isSubmitting}
-            className="w-full rounded-full bg-slate-200 px-6 py-5 text-2xl font-medium text-slate-500 disabled:cursor-not-allowed disabled:opacity-100"
+            className={`w-full rounded-full px-6 py-5 text-2xl font-medium transition ${
+              isReady && !isSubmitting
+                ? "bg-[#156cf5] text-white shadow-[0_10px_20px_rgba(21,108,245,0.28)]"
+                : "bg-slate-200 text-slate-400 blur-[1px]"
+            } disabled:cursor-not-allowed`}
           >
-            {isSubmitting ? "Saving..." : "Next"}
+            {isSubmitting ? "Submitting..." : "Submit"}
           </button>
           <div className="mx-auto mt-6 h-1.5 w-36 rounded-full bg-slate-900" />
         </div>
