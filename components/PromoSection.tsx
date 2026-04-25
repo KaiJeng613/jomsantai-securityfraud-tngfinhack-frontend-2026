@@ -1,6 +1,12 @@
 import Link from "next/link";
 
-export default function PromoSection() {
+interface PromoSectionProps {
+  countryCode?: string;
+}
+
+export default function PromoSection({ countryCode = "MY" }: PromoSectionProps) {
+  const isMalaysia = countryCode === "MY";
+
   return (
     <div className="px-4 py-3 flex gap-3">
       {/* Left column: Grow your money + GOrewards stacked */}
@@ -23,27 +29,29 @@ export default function PromoSection() {
         </div>
       </div>
 
-      {/* Right column: BUDI95 - clickable */}
-      <Link href="/budi95" className="flex-1 bg-blue-50 rounded-xl p-3 block">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-10 h-10 rounded-full bg-[#5BADE0] flex items-center justify-center text-[10px] font-bold text-white leading-tight text-center">
-            BUDI<br/>RON95
+      {/* Right column: BUDI95 - only shown for Malaysia */}
+      {isMalaysia && (
+        <Link href="/budi95" className="flex-1 bg-blue-50 rounded-xl p-3 block">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-10 h-10 rounded-full bg-[#5BADE0] flex items-center justify-center text-[10px] font-bold text-white leading-tight text-center">
+              BUDI<br/>RON95
+            </div>
+            <div>
+              <p className="text-xs font-bold">BUDI95</p>
+              <p className="text-[10px] text-gray-600">RON95 at RM1.99</p>
+            </div>
           </div>
-          <div>
-            <p className="text-xs font-bold">BUDI95</p>
-            <p className="text-[10px] text-gray-600">RON95 at RM1.99</p>
+          <div className="bg-white rounded-lg px-3 py-2 flex items-center justify-between">
+            <div>
+              <p className="text-[10px] text-gray-400">Fuel balance</p>
+              <p className="text-sm font-bold">184 litres</p>
+            </div>
+            <div className="w-8 h-8 rounded-full border-[3px] border-[#0b66cb] flex items-center justify-center">
+              <span className="text-[10px]">⛽</span>
+            </div>
           </div>
-        </div>
-        <div className="bg-white rounded-lg px-3 py-2 flex items-center justify-between">
-          <div>
-            <p className="text-[10px] text-gray-400">Fuel balance</p>
-            <p className="text-sm font-bold">184 litres</p>
-          </div>
-          <div className="w-8 h-8 rounded-full border-[3px] border-[#0b66cb] flex items-center justify-center">
-            <span className="text-[10px]">⛽</span>
-          </div>
-        </div>
-      </Link>
+        </Link>
+      )}
     </div>
   );
 }

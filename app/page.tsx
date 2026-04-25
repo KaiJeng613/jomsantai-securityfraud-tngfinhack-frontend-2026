@@ -59,7 +59,7 @@ export default function Home() {
         <div className="min-h-screen rounded-t-3xl bg-white">
           <div className="pb-6 pt-4">
             <QuickActions />
-            <PromoSection />
+            <PromoSection countryCode={selectedCountryCode} />
             <RecommendedSection />
             <FavouritesSection />
             <GoFinanceBanner />
