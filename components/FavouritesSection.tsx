@@ -1,5 +1,14 @@
+import Link from "next/link";
+
+type FavItem = {
+  icon: string;
+  label: string;
+  color: string;
+  href?: string;
+};
+
 export default function FavouritesSection() {
-  const favourites = [
+  const favourites: FavItem[][] = [
     [
       { icon: "🅿️", label: "Street Par...", color: "bg-blue-100" },
       { icon: "💳", label: "TNG Card", color: "bg-blue-100" },
@@ -9,7 +18,7 @@ export default function FavouritesSection() {
     [
       { icon: "➕", label: "GO+", color: "bg-orange-100" },
       { icon: "📈", label: "Investment", color: "bg-blue-100" },
-      { icon: "📱", label: "Prepaid", color: "bg-sky-100" },
+      { icon: "📱", label: "Prepaid", color: "bg-sky-100", href: "/prepaid" },
       { icon: "⋯", label: "More", color: "bg-orange-100" },
     ],
   ];
@@ -22,14 +31,26 @@ export default function FavouritesSection() {
       </div>
       {favourites.map((row, rowIndex) => (
         <div key={rowIndex} className="flex justify-around mb-4">
-          {row.map((item, index) => (
-            <div key={index} className="flex flex-col items-center">
-              <div className={`w-14 h-14 ${item.color} rounded-xl flex items-center justify-center text-2xl mb-1`}>
-                {item.icon}
+          {row.map((item, index) => {
+            const content = (
+              <>
+                <div className={`w-14 h-14 ${item.color} rounded-xl flex items-center justify-center text-2xl mb-1`}>
+                  {item.icon}
+                </div>
+                <span className="text-[10px] text-center">{item.label}</span>
+              </>
+            );
+
+            return item.href ? (
+              <Link key={index} href={item.href} className="flex flex-col items-center">
+                {content}
+              </Link>
+            ) : (
+              <div key={index} className="flex flex-col items-center">
+                {content}
               </div>
-              <span className="text-[10px] text-center">{item.label}</span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ))}
     </div>

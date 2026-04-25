@@ -339,7 +339,7 @@ export default function SecurePinPage() {
                 <span className="text-slate-500">Anomaly Score</span>
                 <span className="font-semibold text-red-600">{riskData.anomaly_score}</span>
               </div>
-              {riskData.factors?.map((factor, i) => (
+              {riskData.factors?.filter((factor) => factor.feature !== "gnn_model_score").map((factor, i) => (
                 <div key={i} className="flex justify-between text-[13px]">
                   <span className="text-slate-500">{factor.feature}</span>
                   <span className="font-semibold text-slate-700">{factor.deviation}</span>
