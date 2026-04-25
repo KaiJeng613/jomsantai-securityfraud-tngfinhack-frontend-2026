@@ -337,14 +337,10 @@ export default function SecurePinPage() {
                 <span className="text-slate-500">Anomaly Score</span>
                 <span className="font-semibold text-red-600">{riskData.anomaly_score}</span>
               </div>
-              <div className="flex justify-between text-[13px]">
-                <span className="text-slate-500">Scorer</span>
-                <span className="font-semibold text-slate-700">{riskData.scorer}</span>
-              </div>
               {riskData.factors?.map((factor, i) => (
                 <div key={i} className="flex justify-between text-[13px]">
                   <span className="text-slate-500">{factor.feature}</span>
-                  <span className="font-semibold text-slate-700">deviation: {factor.deviation}</span>
+                  <span className="font-semibold text-slate-700">{factor.deviation}</span>
                 </div>
               ))}
             </div>
