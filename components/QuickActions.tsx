@@ -17,6 +17,7 @@ const actions = [
   {
     icon: String.fromCodePoint(0x1f4b3),
     label: "Cards",
+    href: "/cards",
   },
 ];
 

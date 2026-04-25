@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 
@@ -38,6 +39,7 @@ const steps = [
 ];
 
 export default function Budi95Page() {
+  const [showWarning, setShowWarning] = useState(false);
   const remainingLitres = 184.926;
   const totalLitres = 200.0;
   const percentage = Math.round((remainingLitres / totalLitres) * 100);
@@ -122,12 +124,12 @@ export default function Budi95Page() {
           </p>
 
           {/* Buy Fuel Button */}
-          <Link
-            href="/secure-pin"
+          <button
+            onClick={() => setShowWarning(true)}
             className="block w-full rounded-full bg-white py-3 text-center text-[16px] font-semibold text-[#0b66cb]"
           >
             Buy fuel
-          </Link>
+          </button>
         </div>
 
         {/* Participating Stations */}
@@ -172,6 +174,42 @@ export default function Budi95Page() {
 
         <div className="h-8" />
       </div>
+
+      {/* Suspicious Warning Modal */}
+      {showWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+              <span className="text-4xl">🚨</span>
+            </div>
+
+            <h2 className="mb-2 text-center text-[20px] font-bold text-red-600">
+              Suspicious Transaction detected
+            </h2>
+            <p className="mb-4 text-center text-[14px] leading-relaxed text-slate-600">
+              This Transaction has been flagged as suspicious. Transfer is blocked for this recipient, and the Check & Transfer button will remain disabled.
+            </p>
+            <p className="mb-5 text-center text-[13px] leading-relaxed text-slate-500">
+              Use Secure PIN to confirm that you intentionally opened this recipient and review the warning before leaving the page.
+            </p>
+
+            <div className="space-y-3">
+              <Link
+                href="/secure-pin"
+                className="block w-full rounded-full bg-[#0b66cb] py-3 text-center text-[15px] font-semibold text-white"
+              >
+                Use Secure PIN
+              </Link>
+              <button
+                onClick={() => setShowWarning(false)}
+                className="w-full rounded-full border border-slate-300 py-3 text-[15px] font-semibold text-slate-600"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

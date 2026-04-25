@@ -34,6 +34,7 @@ export default function PrepaidPage() {
   const [activeTab, setActiveTab] = useState("Top Up");
   const [selectedTelco, setSelectedTelco] = useState<string | null>(null);
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
+  const [showWarning, setShowWarning] = useState(false);
 
   const total = selectedAmount ?? 0;
 
@@ -98,8 +99,8 @@ export default function PrepaidPage() {
             📞
           </div>
           <div>
-            <p className="text-[14px] font-semibold">Wong Kai Jeng</p>
-            <p className="text-[14px] text-slate-500">+60 <span className="text-[#0b66cb] font-semibold">17 559 7576</span></p>
+            <p className="text-[14px] font-semibold">Leslie Chai</p>
+            <p className="text-[14px] text-slate-500">+60 <span className="text-[#0b66cb] font-semibold">16 516 2567</span></p>
           </div>
         </div>
         <button className="text-xl text-slate-400">📇</button>

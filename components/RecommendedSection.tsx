@@ -2,7 +2,7 @@ import Link from "next/link";
 
 const items = [
   { icon: "📅", label: "Payday", color: "bg-blue-100", href: "/payday" },
-  { icon: "🛍️", label: "Shop & Earn", color: "bg-blue-100" },
+  { icon: "✈️", label: "Travel", color: "bg-blue-100", href: "/travel" },
   { icon: "💳", label: "BLDMS", color: "bg-sky-100" },
   { icon: "🛒", label: "Taobao", color: "bg-orange-100", href: "/taobao" },
 ];
