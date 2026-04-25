@@ -150,6 +150,36 @@ export default function TransactionsPage() {
             </div>
           ))}
         </div>
+
+        {/* LLM Analysis Section */}
+        <div className="px-5 py-4">
+          <button
+            onClick={handleAnalyze}
+            disabled={isAnalyzing}
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#0b66cb] to-[#3b82f6] py-3 text-[14px] font-semibold text-white shadow-md transition disabled:opacity-70"
+          >
+            {isAnalyzing ? (
+              <>
+                <span className="animate-spin">⏳</span>
+                Analyzing...
+              </>
+            ) : (
+              <>
+                <span>🤖</span>
+                Analyze with AI
+              </>
+            )}
+          </button>
+
+          {analysis !== null && (
+            <div className="mt-4 rounded-2xl bg-slate-50 p-4">
+              <pre className="whitespace-pre-wrap text-[13px] leading-relaxed text-slate-700 font-sans">
+                {analysis}
+                {isAnalyzing && <span className="animate-pulse">▌</span>}
+              </pre>
+            </div>
+          )}
+        </div>
       </div>
     </PageShell>
   );
