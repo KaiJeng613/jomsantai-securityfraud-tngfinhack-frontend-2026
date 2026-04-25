@@ -1,6 +1,6 @@
 "use client";
 
-import { KeyboardEvent, useMemo, useRef, useState } from "react";
+import { KeyboardEvent, Suspense, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { pinService, type PinResponse } from "@/lib/api/pinService";
 import PageShell from "@/components/PageShell";
@@ -27,6 +27,14 @@ const createEmptyTimingState = (): TimingState => ({
 });
 
 export default function SecurePinPage() {
+  return (
+    <Suspense fallback={<PageShell><div className="flex min-h-screen items-center justify-center"><span className="text-slate-400">Loading...</span></div></PageShell>}>
+      <SecurePinContent />
+    </Suspense>
+  );
+}
+
+function SecurePinContent() {
   const searchParams = useSearchParams();
   const [pin, setPin] = useState("");
   const [message, setMessage] = useState("");
@@ -398,6 +406,46 @@ export default function SecurePinPage() {
                 onClick={() => {
                   setShowRiskWarning(false);
                   setRiskData(null);
+                }}
+                className="w-full rounded-full border border-slate-300 py-3 text-[15px] font-semibold text-slate-600"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bot Detection Warning Modal */}
+      {showBotWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+              <span className="text-4xl">🤖</span>
+            </div>
+
+            <h2 className="mb-2 text-center text-[20px] font-bold text-red-600">
+              Suspicious Activity
+            </h2>
+            <p className="mb-5 text-center text-[14px] text-slate-600">
+              Our security system has detected this behaviour as potentially bot.
+            </p>
+
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setShowBotWarning(false);
+                  resetPinEntry();
+                  window.history.back();
+                }}
+                className="w-full rounded-full bg-red-600 py-3 text-[15px] font-semibold text-white"
+              >
+                Cancel Transaction
+              </button>
+              <button
+                onClick={() => {
+                  setShowBotWarning(false);
+                  resetPinEntry();
                 }}
                 className="w-full rounded-full border border-slate-300 py-3 text-[15px] font-semibold text-slate-600"
               >
