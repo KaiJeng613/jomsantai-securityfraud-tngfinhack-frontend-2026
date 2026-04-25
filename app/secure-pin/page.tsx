@@ -149,7 +149,7 @@ export default function SecurePinPage() {
         session_id: crypto.randomUUID(),
         user_id: "demo-user-001",
         device: {
-          platform: /android/i.test(navigator.userAgent) ? "android" : "web",
+          platform: /android/i.test(navigator.userAgent) ? "android" : "ios",
           os_version: userAgentData?.platform || navigator.platform || "unknown",
           device_model: navigator.userAgent,
         },

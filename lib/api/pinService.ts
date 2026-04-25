@@ -53,7 +53,31 @@ export interface PinResponse {
 
 export const pinService = {
   createPin: async (data: CreatePinRequest): Promise<ApiResponse<PinResponse>> => {
-    return apiClient.post<PinResponse>(API_CONFIG.endpoints.pin.create, data);
+    // Use local API proxy to avoid CORS issues
+    try {
+      console.log("[pinService] Sending PIN create request via proxy...");
+      const response = await fetch("/api/pin/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      console.log("[pinService] Proxy response:", result);
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: result.error || "Request failed",
+          message: result.message,
+        };
+      }
+
+      return { success: true, data: result };
+    } catch (error: any) {
+      console.error("[pinService] Error:", error);
+      return { success: false, error: error.message || "Network error" };
+    }
   },
 
   verifyPin: async (data: VerifyPinRequest): Promise<ApiResponse<PinResponse>> => {

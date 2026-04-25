@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 export default function BalanceCard() {
@@ -30,10 +31,10 @@ export default function BalanceCard() {
           <span>+</span>
           <span>Add money</span>
         </button>
-        <button className="flex items-center gap-1 text-white">
+        <Link href="/transactions" className="flex items-center gap-1 text-white">
           <span>Transactions</span>
           <span className="text-xs">›</span>
-        </button>
+        </Link>
       </div>
     </div>
   );

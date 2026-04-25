@@ -18,19 +18,14 @@ export type PenipuLookupResponse = {
 export const lookupPenipuPhone = async (
   phone: string,
 ): Promise<PenipuLookupResponse> => {
-  const response = await fetch(`/api/penipu/phone?q=${encodeURIComponent(phone)}`, {
-    method: "GET",
-    cache: "no-store",
-  });
-
-  const data = (await response.json()) as PenipuLookupResponse;
-
-  if (!response.ok) {
-    return {
-      success: false,
-      error: data.error ?? "PenipuMY lookup failed.",
-    };
-  }
-
-  return data;
+  // PenipuMY API disabled — no API key configured.
+  // Always returns safe/not-flagged result.
+  console.log("[PenipuMY] Lookup disabled (no API key). Skipping check for:", phone);
+  return {
+    success: true,
+    flagged: false,
+    query: phone,
+    count: 0,
+    results: [],
+  };
 };

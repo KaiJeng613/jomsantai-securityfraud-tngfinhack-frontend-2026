@@ -38,7 +38,7 @@ export const transferContacts: TransferContact[] = [
   {
     id: "scammer",
     name: "Scammer",
-    phone: "0121234567",
+    phone: "01111343592",
     initials: "S",
     note: "Flagged in a verified PenipuMY report",
     penipuSourceUrl: "https://penipu.my/report/view/150",
