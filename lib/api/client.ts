@@ -39,11 +39,11 @@ class ApiClient {
     this.apiKey = API_CONFIG.apiKey;
     this.timeout = API_CONFIG.timeout;
     
-    logger.info('API Client initialized', {
-      baseURL: this.baseURL,
-      apiKey: this.apiKey ? `${this.apiKey.substring(0, 10)}...` : 'NOT SET',
-      timeout: this.timeout,
-    });
+    // logger.info('API Client initialized', {
+    //   baseURL: this.baseURL,
+    //   apiKey: this.apiKey ? `${this.apiKey.substring(0, 10)}...` : 'NOT SET',
+    //   timeout: this.timeout,
+    // });
   }
 
   // Generic request method

@@ -4,7 +4,7 @@ const items = [
   { icon: "🔐", label: "Secure PIN", color: "bg-blue-100", href: "/secure-pin" },
   { icon: "🛍️", label: "Shop & Earn", color: "bg-blue-100" },
   { icon: "💳", label: "BLDMS", color: "bg-sky-100" },
-  { icon: "🛒", label: "Taobao", color: "bg-orange-100" },
+  { icon: "🛒", label: "Taobao", color: "bg-orange-100", href: "/taobao" },
 ];
 
 export default function RecommendedSection() {

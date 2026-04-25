@@ -16,6 +16,7 @@ const transferModes = ["eWallet", "DuitNow", "Overseas"];
 
 export default function TransferDirectory() {
   const [query, setQuery] = useState("");
+  const [showAlert, setShowAlert] = useState(true);
 
   const visibleContacts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -110,6 +111,7 @@ export default function TransferDirectory() {
             </div>
           </section>
 
+          {showAlert && (
           <section className="rounded-3xl bg-white p-5 shadow-sm">
             <div className="flex gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-[#0b66cb] text-2xl text-[#0b66cb]">
@@ -123,12 +125,19 @@ export default function TransferDirectory() {
                       We will run a PenipuMY phone check before the transaction completes.
                     </p>
                   </div>
-                  <span className="text-slate-400">x</span>
+                  <button
+                    onClick={() => setShowAlert(false)}
+                    className="text-slate-400 text-lg leading-none hover:text-slate-600"
+                    aria-label="Dismiss alert"
+                  >
+                    ✕
+                  </button>
                 </div>
                 <p className="mt-4 text-[16px] font-semibold text-[#0b66cb]">Scam check enabled</p>
               </div>
             </div>
           </section>
+          )}
 
           <section className="rounded-3xl bg-white px-5 py-4 shadow-sm">
             <div className="mb-3 flex items-center justify-between">
