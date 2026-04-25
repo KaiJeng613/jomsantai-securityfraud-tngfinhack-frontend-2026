@@ -1,6 +1,7 @@
 "use client";
 
 import { KeyboardEvent, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { pinService, type PinResponse } from "@/lib/api/pinService";
 import PageShell from "@/components/PageShell";
 
@@ -26,6 +27,7 @@ const createEmptyTimingState = (): TimingState => ({
 });
 
 export default function SecurePinPage() {
+  const searchParams = useSearchParams();
   const [pin, setPin] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -43,6 +45,9 @@ export default function SecurePinPage() {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
     return baseUrl.length > 0 && !baseUrl.includes(PLACEHOLDER_API_HOST);
   }, []);
+  const isSuspiciousTransferCheck =
+    searchParams.get("source") === "transfer" && searchParams.get("reason") === "suspicious";
+  const suspiciousContactId = searchParams.get("contactId");
 
   const resetPinEntry = () => {
     setPin("");
@@ -223,6 +228,19 @@ export default function SecurePinPage() {
 
         {/* Content */}
         <div className="flex-1 px-5 py-6">
+          {isSuspiciousTransferCheck ? (
+            <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-4">
+              <p className="text-[14px] font-semibold text-amber-800">
+                Suspicious transfer review
+              </p>
+              <p className="mt-2 text-[14px] leading-relaxed text-amber-800">
+                This extra Secure PIN step was triggered because the selected recipient
+                {suspiciousContactId ? ` (${suspiciousContactId})` : ""} is flagged as suspicious.
+                Completing PIN verification does not re-enable the transfer.
+              </p>
+            </div>
+          ) : null}
+
           <p className="mb-6 text-[16px] text-slate-600">
             Please enter PIN linked to your eWallet account
           </p>

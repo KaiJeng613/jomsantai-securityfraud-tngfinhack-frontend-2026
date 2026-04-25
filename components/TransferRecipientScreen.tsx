@@ -35,6 +35,7 @@ interface TransferRecipientScreenProps {
 export default function TransferRecipientScreen({
   contact,
 }: TransferRecipientScreenProps) {
+  const isSuspiciousContact = contact.id === "scammer";
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,6 +43,7 @@ export default function TransferRecipientScreen({
 
   const numericAmount = Number(amount);
   const canSubmit =
+    !isSuspiciousContact &&
     Number.isFinite(numericAmount) &&
     numericAmount > 0 &&
     numericAmount <= TRANSFERABLE_BALANCE_MYR &&
@@ -130,14 +132,14 @@ export default function TransferRecipientScreen({
           {contact.note ? (
             <section
               className={`rounded-3xl border px-4 py-4 shadow-sm ${
-                contact.id === "scammer"
+                isSuspiciousContact
                   ? "border-rose-200 bg-rose-50"
                   : "border-slate-200 bg-white"
               }`}
             >
               <p
                 className={`text-sm ${
-                  contact.id === "scammer" ? "text-rose-700" : "text-slate-600"
+                  isSuspiciousContact ? "text-rose-700" : "text-slate-600"
                 }`}
               >
                 {contact.note}
@@ -156,6 +158,28 @@ export default function TransferRecipientScreen({
                   </>
                 ) : null}
               </p>
+            </section>
+          ) : null}
+
+          {isSuspiciousContact ? (
+            <section className="rounded-3xl border border-amber-200 bg-amber-50 px-4 py-4 shadow-sm">
+              <h3 className="text-[18px] font-semibold text-amber-800">
+                Suspicious recipient detected
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-amber-800">
+                This contact has been flagged as suspicious. Transfer is blocked for this
+                recipient, and the Check & Transfer button will remain disabled.
+              </p>
+              <p className="mt-3 text-sm leading-6 text-amber-800">
+                Use Secure PIN to confirm that you intentionally opened this recipient and review
+                the warning before leaving the page.
+              </p>
+              <Link
+                href={`/secure-pin?source=transfer&contactId=${contact.id}&reason=suspicious`}
+                className="mt-4 inline-flex rounded-full bg-[#0b66cb] px-5 py-3 text-[15px] font-semibold text-white shadow-lg"
+              >
+                Verify with Secure PIN
+              </Link>
             </section>
           ) : null}
 
@@ -261,7 +285,11 @@ export default function TransferRecipientScreen({
                   : "bg-slate-200 text-slate-400"
               }`}
             >
-              {isSubmitting ? "Checking..." : "Check & Transfer"}
+              {isSuspiciousContact
+                ? "Transfer blocked"
+                : isSubmitting
+                  ? "Checking..."
+                  : "Check & Transfer"}
             </button>
           </div>
         </div>

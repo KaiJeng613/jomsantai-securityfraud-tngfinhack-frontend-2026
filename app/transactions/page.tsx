@@ -71,7 +71,7 @@ export default function TransactionsPage() {
     const totalTx = transactions.length;
     const avgSpend = (totalSpent / totalTx).toFixed(2);
     const stations = transactions.map((tx) => tx.title.replace("Refueled at ", ""));
-    const uniqueStations = [...new Set(stations)];
+    const uniqueStations = Array.from(new Set(stations));
 
     // Simulate LLM typing effect
     const fullText = `📊 Transaction Summary\n\n` +
