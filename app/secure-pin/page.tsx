@@ -1,7 +1,7 @@
 "use client";
 
 import { KeyboardEvent, useMemo, useRef, useState } from "react";
-import { pinService } from "@/lib/api/pinService";
+import { pinService, type PinResponse } from "@/lib/api/pinService";
 import PageShell from "@/components/PageShell";
 
 const PLACEHOLDER_API_HOST = "your-api-gateway-url.execute-api.region.amazonaws.com";
@@ -31,6 +31,8 @@ export default function SecurePinPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timingState, setTimingState] = useState<TimingState>(createEmptyTimingState);
+  const [showRiskWarning, setShowRiskWarning] = useState(false);
+  const [riskData, setRiskData] = useState<PinResponse | null>(null);
   const pinInputRef = useRef<HTMLInputElement>(null);
   const userAgentData =
     typeof navigator !== "undefined"
@@ -170,8 +172,18 @@ export default function SecurePinPage() {
       console.log("[Secure PIN] API Response:", response);
 
       if (response.success) {
-        console.log("[Secure PIN] PIN submitted successfully");
-        setMessage(response.data?.message || "PIN submitted successfully.");
+        const data = response.data;
+        console.log("[Secure PIN] Scorer:", data?.scorer, "Risk Level:", data?.risk_level);
+
+        if (data?.risk_level === "high") {
+          console.warn("[Secure PIN] HIGH RISK detected!", data);
+          setRiskData(data);
+          setShowRiskWarning(true);
+          resetPinEntry();
+          return;
+        }
+
+        setMessage(data?.message || "PIN submitted successfully.");
         resetPinEntry();
         return;
       }
@@ -294,6 +306,74 @@ export default function SecurePinPage() {
           </button>
         </div>
       </div>
+
+      {/* Risk Warning Modal */}
+      {showRiskWarning && riskData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            {/* Warning Icon */}
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+              <span className="text-4xl">⚠️</span>
+            </div>
+
+            <h2 className="mb-2 text-center text-[20px] font-bold text-red-600">
+              Suspicious Transaction
+            </h2>
+            <p className="mb-4 text-center text-[14px] text-slate-600">
+              Our security system has flagged this transaction as potentially fraudulent.
+            </p>
+
+            {/* Risk Details */}
+            <div className="mb-5 space-y-2 rounded-xl bg-red-50 p-4">
+              <div className="flex justify-between text-[13px]">
+                <span className="text-slate-500">Risk Level</span>
+                <span className="font-semibold text-red-600 uppercase">{riskData.risk_level}</span>
+              </div>
+              <div className="flex justify-between text-[13px]">
+                <span className="text-slate-500">Decision</span>
+                <span className="font-semibold text-red-600 uppercase">{riskData.decision}</span>
+              </div>
+              <div className="flex justify-between text-[13px]">
+                <span className="text-slate-500">Anomaly Score</span>
+                <span className="font-semibold text-red-600">{riskData.anomaly_score}</span>
+              </div>
+              <div className="flex justify-between text-[13px]">
+                <span className="text-slate-500">Scorer</span>
+                <span className="font-semibold text-slate-700">{riskData.scorer}</span>
+              </div>
+              {riskData.factors?.map((factor, i) => (
+                <div key={i} className="flex justify-between text-[13px]">
+                  <span className="text-slate-500">{factor.feature}</span>
+                  <span className="font-semibold text-slate-700">deviation: {factor.deviation}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Actions */}
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setShowRiskWarning(false);
+                  setRiskData(null);
+                  window.history.back();
+                }}
+                className="w-full rounded-full bg-red-600 py-3 text-[15px] font-semibold text-white"
+              >
+                Cancel Transaction
+              </button>
+              <button
+                onClick={() => {
+                  setShowRiskWarning(false);
+                  setRiskData(null);
+                }}
+                className="w-full rounded-full border border-slate-300 py-3 text-[15px] font-semibold text-slate-600"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </PageShell>
   );
 }

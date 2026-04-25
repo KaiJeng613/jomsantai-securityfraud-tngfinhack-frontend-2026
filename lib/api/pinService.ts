@@ -45,10 +45,21 @@ export interface ResetPinRequest {
   newPin: string;
 }
 
+export interface RiskFactor {
+  deviation: number;
+  feature: string;
+}
+
 export interface PinResponse {
   userId?: string;
   success: boolean;
   message?: string;
+  anomaly_score?: number;
+  decision?: "allow" | "block" | "review";
+  factors?: RiskFactor[];
+  risk_level?: "low" | "medium" | "high";
+  scorer?: string;
+  session_id?: string;
 }
 
 export const pinService = {

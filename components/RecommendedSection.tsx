@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 const items = [
-  { icon: "🔐", label: "Secure PIN", color: "bg-blue-100", href: "/secure-pin" },
+  { icon: "📅", label: "Payday", color: "bg-blue-100", href: "/payday" },
   { icon: "🛍️", label: "Shop & Earn", color: "bg-blue-100" },
   { icon: "💳", label: "BLDMS", color: "bg-sky-100" },
   { icon: "🛒", label: "Taobao", color: "bg-orange-100", href: "/taobao" },
