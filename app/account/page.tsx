@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import PageHeader from "@/components/PageHeader";
 
 const tabs = ["Payment", "Security", "General", "Business"];
 
@@ -25,17 +26,16 @@ export default function AccountPage() {
     <main className="min-h-screen bg-[#f3f5fb] text-slate-900">
       <div className="mx-auto max-w-md bg-[#0b66cb]">
         <header className="px-5 pb-5 pt-6 text-white">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="text-3xl leading-none" aria-label="Back to home">
-              ←
-            </Link>
-            <div className="relative">
-              <span className="text-3xl">🔔</span>
-              <span className="absolute -right-2 -top-1 rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold">
-                99+
-              </span>
-            </div>
-          </div>
+          <PageHeader 
+            rightElement={
+              <div className="relative">
+                <span className="text-3xl">🔔</span>
+                <span className="absolute -right-2 -top-1 rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold">
+                  99+
+                </span>
+              </div>
+            }
+          />
 
           <div className="mt-7 flex items-start gap-4">
             <div className="flex flex-col items-center gap-2">

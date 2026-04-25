@@ -1,98 +1,62 @@
 # Secure PIN App
 
-A Next.js mobile-responsive financial app with Secure PIN feature.
+Next.js app for the Secure PIN flow, account screens, and authentication UI.
 
-## Getting Started
+## Local Development
 
-### 1. Install Dependencies
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-### 2. Configure AWS Lambda Endpoints
-
-Copy `.env.example` to `.env.local` and update with your AWS Lambda API Gateway URL:
+Create your local env file:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Edit `.env.local`:
-```
-NEXT_PUBLIC_API_BASE_URL=https://your-api-gateway-url.execute-api.region.amazonaws.com/prod
-NEXT_PUBLIC_API_KEY=your-api-key-here
-```
-
-### 3. Run Development Server
+Run the app:
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+## Environment Variables
 
-## API Configuration
-
-The app is configured to call AWS Lambda endpoints for PIN operations:
-
-- **Create PIN**: `POST /pin/create`
-- **Verify PIN**: `POST /pin/verify`
-- **Update PIN**: `PUT /pin/update`
-- **Reset PIN**: `POST /pin/reset`
-
-### Using the API Service
-
-```typescript
-import { pinService } from '@/lib/api/pinService';
-
-// Create PIN
-const result = await pinService.createPin({
-  userId: '12345',
-  pin: '1234',
-});
-
-if (result.success) {
-  console.log('PIN created:', result.data);
-} else {
-  console.error('Error:', result.error);
-}
+```env
+NEXT_PUBLIC_API_BASE_URL=https://your-api-gateway-url.execute-api.region.amazonaws.com/prod
+NEXT_PUBLIC_API_KEY=your-api-key-here
+NEXT_PUBLIC_PIN_CREATE_ENDPOINT=/pin/create
+NEXT_PUBLIC_PIN_VERIFY_ENDPOINT=/pin/verify
+NEXT_PUBLIC_PIN_UPDATE_ENDPOINT=/pin/update
+NEXT_PUBLIC_PIN_RESET_ENDPOINT=/pin/reset
 ```
 
-## Project Structure
+## Production Build
 
-```
-├── app/                    # Next.js app directory
-│   ├── page.tsx           # Home page
-│   ├── layout.tsx         # Root layout
-│   └── globals.css        # Global styles
-├── components/            # React components
-│   ├── BalanceCard.tsx
-│   ├── QuickActions.tsx
-│   ├── PromoSection.tsx
-│   ├── RecommendedSection.tsx
-│   ├── FavouritesSection.tsx
-│   ├── GoFinanceBanner.tsx
-│   └── BottomNav.tsx
-├── lib/                   # Utilities and services
-│   └── api/              # API configuration
-│       ├── config.ts     # API endpoints config
-│       ├── client.ts     # HTTP client
-│       └── pinService.ts # PIN service methods
-├── .env.local            # Environment variables (not in git)
-└── .env.example          # Example environment variables
-```
+This project is configured with Next.js `standalone` output for VM deployment.
 
-## Build for Production
+Build locally:
 
 ```bash
 npm run build
-npm start
 ```
 
-## Notes
+Run the standalone server:
 
-- Update `.env.local` with your actual AWS Lambda endpoint tonight
-- The API client includes timeout handling (30s default)
-- All API calls return a consistent `ApiResponse` format
-- API key is sent via `x-api-key` header
+```bash
+npm run start:standalone
+```
+
+## Alibaba ECS Deployment
+
+Deployment instructions are in:
+
+[deploy/alibaba-ecs.md](C:\Source\Repos\tnghackathon\jomsantai-securityfraud-tngfinhack-frontend-2026\deploy\alibaba-ecs.md)
+
+The repo now includes:
+
+- `Dockerfile` for container deployment on ECS
+- `deploy/ecs/secure-pin-app.service` for direct Node.js + `systemd`
+- `next.config.mjs` with `output: "standalone"`

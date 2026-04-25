@@ -8,7 +8,6 @@ import PromoSection from "@/components/PromoSection";
 import RecommendedSection from "@/components/RecommendedSection";
 import FavouritesSection from "@/components/FavouritesSection";
 import GoFinanceBanner from "@/components/GoFinanceBanner";
-import BottomNav from "@/components/BottomNav";
 
 const countries = [
   { code: "MY", name: "Malaysia", flag: "🇲🇾" },
@@ -23,7 +22,6 @@ const countries = [
 ];
 
 export default function Home() {
-  const [selectedNav, setSelectedNav] = useState(0);
   const [selectedCountryCode, setSelectedCountryCode] = useState(countries[0].code);
 
   return (
@@ -59,7 +57,7 @@ export default function Home() {
         </div>
 
         <div className="min-h-screen rounded-t-3xl bg-white">
-          <div className="pb-20 pt-4">
+          <div className="pb-6 pt-4">
             <QuickActions />
             <PromoSection />
             <RecommendedSection />
@@ -67,8 +65,6 @@ export default function Home() {
             <GoFinanceBanner />
           </div>
         </div>
-
-        <BottomNav selected={selectedNav} onSelect={setSelectedNav} />
       </div>
     </main>
   );

@@ -8,6 +8,26 @@ export interface ApiResponse<T = any> {
   message?: string;
 }
 
+// Logger utility
+const logger = {
+  info: (message: string, data?: any) => {
+    console.log(`[API Client] ${message}`, data || '');
+  },
+  error: (message: string, error?: any) => {
+    console.error(`[API Client ERROR] ${message}`, error || '');
+  },
+  request: (method: string, url: string, body?: any) => {
+    console.log(`[API Request] ${method} ${url}`);
+    if (body) {
+      console.log('[API Request Body]', JSON.stringify(body, null, 2));
+    }
+  },
+  response: (status: number, data: any) => {
+    console.log(`[API Response] Status: ${status}`);
+    console.log('[API Response Data]', JSON.stringify(data, null, 2));
+  },
+};
+
 // API Client class
 class ApiClient {
   private baseURL: string;
@@ -18,6 +38,12 @@ class ApiClient {
     this.baseURL = API_CONFIG.baseURL;
     this.apiKey = API_CONFIG.apiKey;
     this.timeout = API_CONFIG.timeout;
+    
+    logger.info('API Client initialized', {
+      baseURL: this.baseURL,
+      apiKey: this.apiKey ? `${this.apiKey.substring(0, 10)}...` : 'NOT SET',
+      timeout: this.timeout,
+    });
   }
 
   // Generic request method
@@ -28,6 +54,8 @@ class ApiClient {
     const url = buildURL(endpoint);
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+    logger.request(options.method || 'GET', url, options.body);
 
     try {
       const response = await fetch(url, {
@@ -43,8 +71,11 @@ class ApiClient {
       clearTimeout(timeoutId);
 
       const data = await response.json();
+      
+      logger.response(response.status, data);
 
       if (!response.ok) {
+        logger.error(`Request failed with status ${response.status}`, data);
         return {
           success: false,
           error: data.error || 'Request failed',
@@ -52,6 +83,7 @@ class ApiClient {
         };
       }
 
+      logger.info('Request successful');
       return {
         success: true,
         data,
@@ -60,12 +92,14 @@ class ApiClient {
       clearTimeout(timeoutId);
       
       if (error.name === 'AbortError') {
+        logger.error('Request timeout');
         return {
           success: false,
           error: 'Request timeout',
         };
       }
 
+      logger.error('Network error', error);
       return {
         success: false,
         error: error.message || 'Network error',

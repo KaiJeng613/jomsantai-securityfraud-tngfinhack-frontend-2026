@@ -1,13 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { KeyboardEvent, useMemo, useRef, useState } from "react";
 import { pinService } from "@/lib/api/pinService";
 
 const PLACEHOLDER_API_HOST = "your-api-gateway-url.execute-api.region.amazonaws.com";
 const PIN_LENGTH = 6;
-
-type PinStage = "set" | "confirm";
 
 type TimingState = {
   entryStartTime: number | null;
@@ -27,46 +24,13 @@ const createEmptyTimingState = (): TimingState => ({
   totalEntryDuration: 0,
 });
 
-function PinBoxes({
-  value,
-  label,
-  isActive,
-  onFocus,
-}: {
-  value: string;
-  label: string;
-  isActive: boolean;
-  onFocus: () => void;
-}) {
-  return (
-    <button type="button" onClick={onFocus} className="block w-full text-left">
-      <span className="mb-3 block text-2xl font-medium text-slate-700">{label}</span>
-      <div className="grid grid-cols-6 gap-1.5">
-        {Array.from({ length: PIN_LENGTH }).map((_, index) => (
-          <div
-            key={`${label}-${index}`}
-            className={`flex aspect-square items-center justify-center border-b-2 text-2xl font-semibold ${
-              isActive ? "border-slate-500" : "border-slate-400"
-            } bg-slate-50`}
-          >
-            {value[index] ? "\u2022" : ""}
-          </div>
-        ))}
-      </div>
-    </button>
-  );
-}
-
 export default function SecurePinPage() {
   const [pin, setPin] = useState("");
-  const [confirmPin, setConfirmPin] = useState("");
-  const [activeStage, setActiveStage] = useState<PinStage>("set");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timingState, setTimingState] = useState<TimingState>(createEmptyTimingState);
-  const setPinInputRef = useRef<HTMLInputElement>(null);
-  const confirmPinInputRef = useRef<HTMLInputElement>(null);
+  const pinInputRef = useRef<HTMLInputElement>(null);
   const userAgentData =
     typeof navigator !== "undefined"
       ? (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData
@@ -77,13 +41,13 @@ export default function SecurePinPage() {
     return baseUrl.length > 0 && !baseUrl.includes(PLACEHOLDER_API_HOST);
   }, []);
 
-  const focusStage = (stage: PinStage) => {
-    setActiveStage(stage);
-    const targetRef = stage === "set" ? setPinInputRef : confirmPinInputRef;
-    targetRef.current?.focus();
+  const resetPinEntry = () => {
+    setPin("");
+    setTimingState(createEmptyTimingState());
+    pinInputRef.current?.focus();
   };
 
-  const handleSetPinKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+  const handlePinKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (!/^\d$/.test(event.key) && event.key !== "Backspace") {
       return;
     }
@@ -112,7 +76,7 @@ export default function SecurePinPage() {
     });
   };
 
-  const handleSetPinKeyUp = (event: KeyboardEvent<HTMLInputElement>) => {
+  const handlePinKeyUp = (event: KeyboardEvent<HTMLInputElement>) => {
     if (!/^\d$/.test(event.key) && event.key !== "Backspace") {
       return;
     }
@@ -134,188 +98,199 @@ export default function SecurePinPage() {
     });
   };
 
-  const handlePinChange = (stage: PinStage, rawValue: string) => {
+  const handlePinChange = (rawValue: string) => {
     const nextValue = rawValue.replace(/\D/g, "").slice(0, PIN_LENGTH);
 
-    if (stage === "set") {
-      if (nextValue.length < pin.length) {
-        setTimingState(createEmptyTimingState());
-      }
+    setMessage("");
+    setError("");
 
-      setPin(nextValue);
-
-      if (nextValue.length === PIN_LENGTH) {
-        setTimingState((current) => ({
-          ...current,
-          totalEntryDuration: current.entryStartTime
-            ? Math.round(performance.now() - current.entryStartTime)
-            : current.totalEntryDuration,
-        }));
-        setActiveStage("confirm");
-        confirmPinInputRef.current?.focus();
-      }
-
-      return;
+    if (nextValue.length < pin.length) {
+      setTimingState(createEmptyTimingState());
     }
 
-    setConfirmPin(nextValue);
+    setPin(nextValue);
+
+    if (nextValue.length === PIN_LENGTH) {
+      setTimingState((current) => ({
+        ...current,
+        totalEntryDuration: current.entryStartTime
+          ? Math.round(performance.now() - current.entryStartTime)
+          : current.totalEntryDuration,
+      }));
+    }
   };
 
   const handleSubmit = async () => {
     setMessage("");
     setError("");
 
-    if (pin.length !== PIN_LENGTH || confirmPin.length !== PIN_LENGTH) {
-      setError("Enter and confirm a 6-digit PIN.");
-      return;
-    }
-
-    if (pin !== confirmPin) {
-      setError("PIN confirmation does not match.");
+    if (pin.length !== PIN_LENGTH) {
+      setError("Enter a 6-digit PIN.");
       return;
     }
 
     if (!isApiConfigured) {
-      setError("Set NEXT_PUBLIC_API_BASE_URL and NEXT_PUBLIC_API_KEY before calling the API.");
+      setError("API not configured. Please set NEXT_PUBLIC_API_BASE_URL and NEXT_PUBLIC_API_KEY in your environment variables.");
       return;
     }
 
     setIsSubmitting(true);
 
-    const response = await pinService.createPin({
-      session_id: crypto.randomUUID(),
-      user_id: "demo-user-001",
-      device: {
-        platform: /android/i.test(navigator.userAgent) ? "android" : "web",
-        os_version: userAgentData?.platform || navigator.platform || "unknown",
-        device_model: navigator.userAgent,
-      },
-      location: {
-        country_code: "MY",
-        latitude: 3.139,
-        longitude: 101.687,
-      },
-      keystroke_dynamics: {
-        pin_length: PIN_LENGTH,
-        inter_key_delays_ms: timingState.interKeyDelays,
-        hold_durations_ms: timingState.holdDurations,
-        total_entry_duration_ms: timingState.totalEntryDuration,
-      },
+    console.log("[Secure PIN] Submitting PIN to API...");
+    console.log("[Secure PIN] API Base URL:", process.env.NEXT_PUBLIC_API_BASE_URL);
+    console.log("[Secure PIN] Keystroke Dynamics:", {
+      inter_key_delays_ms: timingState.interKeyDelays,
+      hold_durations_ms: timingState.holdDurations,
+      total_entry_duration_ms: timingState.totalEntryDuration,
     });
 
-    setIsSubmitting(false);
+    try {
+      const response = await pinService.createPin({
+        session_id: crypto.randomUUID(),
+        user_id: "demo-user-001",
+        device: {
+          platform: /android/i.test(navigator.userAgent) ? "android" : "web",
+          os_version: userAgentData?.platform || navigator.platform || "unknown",
+          device_model: navigator.userAgent,
+        },
+        location: {
+          country_code: "MY",
+          latitude: 3.139,
+          longitude: 101.687,
+        },
+        keystroke_dynamics: {
+          pin_length: PIN_LENGTH,
+          inter_key_delays_ms: timingState.interKeyDelays,
+          hold_durations_ms: timingState.holdDurations,
+          total_entry_duration_ms: timingState.totalEntryDuration,
+        },
+      });
 
-    if (response.success) {
-      setMessage(response.data?.message || "Secure PIN submitted successfully.");
-      setPin("");
-      setConfirmPin("");
-      setActiveStage("set");
-      setTimingState(createEmptyTimingState());
-      setPinInputRef.current?.focus();
-      return;
+      console.log("[Secure PIN] API Response:", response);
+
+      if (response.success) {
+        console.log("[Secure PIN] PIN submitted successfully");
+        setMessage(response.data?.message || "PIN submitted successfully.");
+        resetPinEntry();
+        return;
+      }
+
+      console.error("[Secure PIN] API Error:", response.error);
+      setError(response.error || "Failed to submit PIN. Please try again.");
+    } catch (submissionError: any) {
+      console.error("[Secure PIN] Unexpected submit error:", submissionError);
+      setError(submissionError.message || "An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setError(response.error || "Unable to reach the Secure PIN Lambda.");
   };
 
-  const isReady = pin.length === PIN_LENGTH && confirmPin.length === PIN_LENGTH;
+  const isReady = pin.length === PIN_LENGTH;
 
   return (
-    <main className="min-h-screen bg-white px-5 pb-8 pt-6 text-slate-900">
-      <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-md flex-col">
-        <div className="flex items-center justify-between">
-          <Link href="/" className="text-3xl leading-none text-slate-900">
-            {"<"}
-          </Link>
-          <div className="text-sm text-slate-400"> </div>
+    <main className="min-h-screen bg-white text-slate-900">
+      <div className="mx-auto flex min-h-screen max-w-md flex-col">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+          <button
+            onClick={() => window.history.back()}
+            className="text-2xl leading-none text-slate-600"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+          <h1 className="text-[18px] font-semibold text-slate-900">PIN</h1>
+          <div className="w-6" />
         </div>
 
-        <div className="mt-8 flex items-center gap-2">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <span
-              key={index}
-              className={`h-2.5 w-2.5 rounded-full ${
-                index === 2 ? "bg-blue-500" : "bg-slate-200"
-              }`}
-            />
-          ))}
-        </div>
-
-        <h1 className="mt-10 text-6xl font-semibold tracking-tight text-slate-900">6-digit PIN</h1>
-        <p className="mt-4 text-2xl text-slate-500">Set your PIN</p>
-
-        <div className="mt-6 space-y-6">
-          <PinBoxes
-            value={pin}
-            label="Set your PIN"
-            isActive={activeStage === "set"}
-            onFocus={() => focusStage("set")}
-          />
-          <PinBoxes
-            value={confirmPin}
-            label="Confirm your PIN"
-            isActive={activeStage === "confirm"}
-            onFocus={() => focusStage("confirm")}
-          />
-        </div>
-
-        <input
-          ref={setPinInputRef}
-          value={pin}
-          onChange={(event) => handlePinChange("set", event.target.value)}
-          onKeyDown={handleSetPinKeyDown}
-          onKeyUp={handleSetPinKeyUp}
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          className="sr-only"
-        />
-        <input
-          ref={confirmPinInputRef}
-          value={confirmPin}
-          onChange={(event) => handlePinChange("confirm", event.target.value)}
-          inputMode="numeric"
-          className="sr-only"
-        />
-
-        <section className="mt-14">
-          <h2 className="text-4xl font-semibold leading-tight text-slate-900">
-            Follow these security requirements to create a strong PIN:
-          </h2>
-          <ul className="mt-6 list-disc space-y-4 pl-6 text-xl leading-8 text-slate-800">
-            <li>Do not use single numbers, couplets, or triplets.</li>
-            <li>Do not use sequential numbers.</li>
-            <li>
-              Do not use your registered mobile number or the first or last 6 digits of your
-              identification document.
-            </li>
-            <li>Do not use your date of birth in any sequence.</li>
-          </ul>
-        </section>
-
-        {message ? (
-          <p className="mt-6 rounded-2xl bg-emerald-50 px-4 py-3 text-base text-emerald-700">
-            {message}
+        {/* Content */}
+        <div className="flex-1 px-5 py-6">
+          <p className="mb-6 text-[16px] text-slate-600">
+            Please enter PIN linked to your eWallet account
           </p>
-        ) : null}
 
-        {error ? (
-          <p className="mt-6 rounded-2xl bg-rose-50 px-4 py-3 text-base text-rose-700">{error}</p>
-        ) : null}
+          {/* PIN Input Boxes */}
+          <div
+            className="relative mb-8"
+            onClick={() => pinInputRef.current?.focus()}
+            role="presentation"
+          >
+            <div className="grid grid-cols-6 gap-2">
+              {Array.from({ length: PIN_LENGTH }).map((_, index) => {
+                const isActiveSlot = index === Math.min(pin.length, PIN_LENGTH - 1);
+                const hasValue = Boolean(pin[index]);
 
-        <div className="mt-auto pt-10">
+                return (
+                  <div
+                    key={index}
+                    className={`flex aspect-square items-center justify-center rounded-lg border-2 bg-white text-2xl font-semibold text-slate-900 transition ${
+                      hasValue || isActiveSlot
+                        ? "border-[#0b66cb]"
+                        : "border-slate-300"
+                    }`}
+                  >
+                    {pin[index] || ""}
+                  </div>
+                );
+              })}
+            </div>
+
+            <input
+              ref={pinInputRef}
+              value={pin}
+              onChange={(event) => handlePinChange(event.target.value)}
+              onKeyDown={handlePinKeyDown}
+              onKeyUp={handlePinKeyUp}
+              type="tel"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={PIN_LENGTH}
+              autoComplete="one-time-code"
+              autoFocus
+              aria-label="Enter 6-digit PIN"
+              aria-invalid={Boolean(error)}
+              className="absolute inset-0 h-full w-full cursor-text opacity-0"
+            />
+          </div>
+
+          {/* Security Notice */}
+          <div className="flex gap-3 rounded-xl bg-blue-50 p-4">
+            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center">
+              <span className="text-xl text-blue-600">🛡️</span>
+            </div>
+            <p className="text-[14px] leading-relaxed text-slate-700">
+              Payments will be processed securely and may require additional authentication.
+            </p>
+          </div>
+
+          {/* Messages */}
+          {message ? (
+            <p className="mt-4 rounded-xl bg-emerald-50 px-4 py-3 text-[14px] text-emerald-700">
+              {message}
+            </p>
+          ) : null}
+
+          {error ? (
+            <p className="mt-4 rounded-xl bg-rose-50 px-4 py-3 text-[14px] text-rose-700">
+              {error}
+            </p>
+          ) : null}
+        </div>
+
+        {/* Submit Button */}
+        <div className="border-t border-slate-200 p-5">
           <button
             type="button"
             onClick={handleSubmit}
             disabled={!isReady || isSubmitting}
-            className={`w-full rounded-full px-6 py-5 text-2xl font-medium transition ${
+            className={`w-full rounded-full px-6 py-4 text-[16px] font-semibold transition ${
               isReady && !isSubmitting
-                ? "bg-[#156cf5] text-white shadow-[0_10px_20px_rgba(21,108,245,0.28)]"
-                : "bg-slate-200 text-slate-400 blur-[1px]"
+                ? "bg-[#0b66cb] text-white shadow-lg"
+                : "bg-slate-200 text-slate-400"
             } disabled:cursor-not-allowed`}
           >
-            {isSubmitting ? "Submitting..." : "Submit"}
+            {isSubmitting ? "Processing..." : "Confirm"}
           </button>
-          <div className="mx-auto mt-6 h-1.5 w-36 rounded-full bg-slate-900" />
         </div>
       </div>
     </main>

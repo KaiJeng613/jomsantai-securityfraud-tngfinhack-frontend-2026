@@ -1,0 +1,19 @@
+[Unit]
+Description=Secure PIN App (Next.js standalone)
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/secure-pin-app
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=HOSTNAME=0.0.0.0
+EnvironmentFile=/var/www/secure-pin-app/.env.production
+ExecStart=/usr/bin/node /var/www/secure-pin-app/.next/standalone/server.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
