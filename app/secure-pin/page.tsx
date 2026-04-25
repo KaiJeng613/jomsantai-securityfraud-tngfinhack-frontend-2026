@@ -172,7 +172,7 @@ export default function SecurePinPage() {
         },
       });
 
-      console.log("[Secure PIN] API Response:", response);
+      // console.log("[Secure PIN] API Response:", response);
 
       if (response.success) {
         const data = response.data;

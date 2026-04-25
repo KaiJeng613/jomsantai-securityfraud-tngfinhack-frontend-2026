@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import PageHeader from "@/components/PageHeader";
 import PageShell from "@/components/PageShell";
 
@@ -56,6 +57,46 @@ const transactions = [
 ];
 
 export default function TransactionsPage() {
+  const [analysis, setAnalysis] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const handleAnalyze = () => {
+    setIsAnalyzing(true);
+    setAnalysis(null);
+
+    const totalSpent = transactions.reduce((sum, tx) => {
+      const amount = parseFloat(tx.amount.replace(/[^\d.]/g, ""));
+      return sum + amount;
+    }, 0);
+    const totalTx = transactions.length;
+    const avgSpend = (totalSpent / totalTx).toFixed(2);
+    const stations = transactions.map((tx) => tx.title.replace("Refueled at ", ""));
+    const uniqueStations = [...new Set(stations)];
+
+    // Simulate LLM typing effect
+    const fullText = `📊 Transaction Summary\n\n` +
+      `• Total transactions: ${totalTx}\n` +
+      `• Total spent: RM${totalSpent.toFixed(2)}\n` +
+      `• Average per refuel: RM${avgSpend}\n` +
+      `• Stations visited: ${uniqueStations.join(", ")}\n\n` +
+      `💡 Insights\n\n` +
+      `You refuel roughly once a day, alternating between RM30 and RM50 top-ups. ` +
+      `Your most frequent stations are BHP Petrol and Shell. ` +
+      `At RM1.99/L, your RM50 fills get you ~25 litres while RM30 fills get ~15 litres.\n\n` +
+      `⚠️ Tip: Consider consolidating to fewer, larger refuels (RM50) to reduce trips and save time.`;
+
+    let i = 0;
+    const interval = setInterval(() => {
+      setAnalysis(fullText.slice(0, i));
+      i += 3;
+      if (i > fullText.length) {
+        setAnalysis(fullText);
+        setIsAnalyzing(false);
+        clearInterval(interval);
+      }
+    }, 15);
+  };
+
   return (
     <PageShell>
       <div>

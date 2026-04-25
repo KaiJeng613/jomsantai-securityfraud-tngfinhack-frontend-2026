@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TnG Fraud Detector",
+  title: "Pin Shield - TnG Fraud Detector",
   description: "Financial app with secure PIN feature",
 };
 
