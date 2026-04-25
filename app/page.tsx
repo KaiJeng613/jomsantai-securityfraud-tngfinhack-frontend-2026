@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import BalanceCard from "@/components/BalanceCard";
 import QuickActions from "@/components/QuickActions";
@@ -43,10 +44,16 @@ export default function Home() {
               ))}
             </select>
           </label>
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white">
+
+          <Link
+            href="/account"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white"
+            aria-label="Open account page"
+          >
             <span className="text-xl text-primary">👤</span>
-          </div>
+          </Link>
         </div>
+
         <BalanceCard />
       </div>
 
