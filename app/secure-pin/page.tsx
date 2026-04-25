@@ -149,7 +149,9 @@ export default function SecurePinPage() {
 
     try {
       const response = await pinService.createPin({
-        session_id: crypto.randomUUID(),
+        session_id: (typeof crypto !== "undefined" && crypto.randomUUID)
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
         user_id: "demo-user-001",
         device: {
           platform: /android/i.test(navigator.userAgent) ? "android" : "ios",
