@@ -35,6 +35,7 @@ export default function SecurePinPage() {
   const [timingState, setTimingState] = useState<TimingState>(createEmptyTimingState);
   const [showRiskWarning, setShowRiskWarning] = useState(false);
   const [riskData, setRiskData] = useState<PinResponse | null>(null);
+  const [showBotWarning, setShowBotWarning] = useState(false);
   const pinInputRef = useRef<HTMLInputElement>(null);
   const userAgentData =
     typeof navigator !== "undefined"
@@ -144,6 +145,19 @@ export default function SecurePinPage() {
     }
 
     setIsSubmitting(true);
+
+    // Bot detection: check if inter-key delays average is below 150ms
+    const delays = timingState.interKeyDelays;
+    if (delays.length > 0) {
+      const avgDelay = delays.reduce((sum, d) => sum + d, 0) / delays.length;
+      console.log("[Secure PIN] Average inter-key delay:", avgDelay, "ms");
+      if (avgDelay < 150) {
+        console.warn("[Secure PIN] Bot-like behaviour detected! Avg delay:", avgDelay);
+        setShowBotWarning(true);
+        setIsSubmitting(false);
+        return;
+      }
+    }
 
     console.log("[Secure PIN] Submitting PIN to API...");
     console.log("[Secure PIN] API Base URL:", process.env.NEXT_PUBLIC_API_BASE_URL);
