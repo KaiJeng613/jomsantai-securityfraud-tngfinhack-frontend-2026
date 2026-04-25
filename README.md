@@ -20,7 +20,6 @@ The main product flow is:
 2. The user navigates to the Secure PIN flow.
 3. The frontend validates the PIN setup UI and captures typing-timing data.
 4. The request is sent to the backend integration layer.
-5. The backend forwards the request to the Lambda-based processing flow.
 
 ## Features
 
@@ -42,7 +41,7 @@ The main product flow is:
 - Alibaba Cloud ECS
 - Alibaba Function Compute
 - AWS API Gateway
-- AWS Lambda
+
 
 ## Pages
 
@@ -63,9 +62,9 @@ The main product flow is:
 npm install
 ```
 
-### 2. Configure AWS Lambda Endpoints
+### 2. Configure Alibaba Cloud Compute Endpoints
 
-Copy `.env.example` to `.env.local` and update with your AWS Lambda API Gateway URL:
+Copy `.env.example` to `.env.local` and update with your AWS API Gateway URL:
 
 ```bash
 cp .env.example .env.local
@@ -92,7 +91,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## API Configuration
 
-The app is configured to call AWS Lambda endpoints for PIN operations:
+The app is configured to call Alibaba Cloud Compute for PIN operations:
 
 - **Create PIN**: `POST /pin/create`
 - **Verify PIN**: `POST /pin/verify`
@@ -230,20 +229,17 @@ The current integration flow is:
 - Frontend hosted on Alibaba ECS
 - Backend entry layer exposed through Alibaba Function Compute
 - Alibaba Function Compute forwards the request to AWS API Gateway
-- AWS API Gateway invokes Lambda for the business logic
 
 ```mermaid
 flowchart LR
-    U["User on Mobile Web"]
+    U["User on Mobile App"]
     F["Next.js Frontend on Alibaba ECS"]
     FC["Alibaba Function Compute API Layer"]
     AGW["AWS API Gateway"]
-    L["AWS Lambda"]
 
     U --> F
     F --> FC
     FC --> AGW
-    AGW --> L
 ```
 
 ## Architecture Explanation
@@ -252,14 +248,13 @@ flowchart LR
 2. When the user submits the Secure PIN form, the frontend sends the request to the backend integration layer.
 3. That backend entry layer is hosted with Alibaba Function Compute.
 4. Alibaba Function Compute forwards or proxies the request to AWS API Gateway.
-5. AWS API Gateway routes the request to the Lambda function that performs the PIN-related business logic.
-6. The response returns through the same chain back to the frontend.
+5. The response returns through the same chain back to the frontend.
 
 This architecture allows the project to:
 
 - host the user-facing frontend on Alibaba ECS
 - use Alibaba Function Compute as the bridge layer
-- preserve AWS API Gateway and Lambda for the downstream processing path
+- preserve AWS API Gateway for the downstream processing path
 
 ## Notes
 
