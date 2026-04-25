@@ -294,6 +294,6 @@ export default function SecurePinPage() {
           </button>
         </div>
       </div>
-    </main>
+    </PageShell>
   );
 }
