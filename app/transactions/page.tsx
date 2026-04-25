@@ -1,6 +1,7 @@
 "use client";
 
 import PageHeader from "@/components/PageHeader";
+import PageShell from "@/components/PageShell";
 
 const transactions = [
   {
@@ -56,8 +57,8 @@ const transactions = [
 
 export default function TransactionsPage() {
   return (
-    <main className="min-h-screen bg-white text-slate-900">
-      <div className="mx-auto max-w-md">
+    <PageShell>
+      <div>
         {/* Blue Header */}
         <div className="bg-[#0b66cb] px-5 pb-4 pt-6 text-white">
           <div className="flex items-center justify-between">
@@ -109,6 +110,6 @@ export default function TransactionsPage() {
           ))}
         </div>
       </div>
-    </main>
+    </PageShell>
   );
 }

@@ -2,6 +2,7 @@
 
 import { KeyboardEvent, useMemo, useRef, useState } from "react";
 import { pinService } from "@/lib/api/pinService";
+import PageShell from "@/components/PageShell";
 
 const PLACEHOLDER_API_HOST = "your-api-gateway-url.execute-api.region.amazonaws.com";
 const PIN_LENGTH = 6;
@@ -188,8 +189,8 @@ export default function SecurePinPage() {
   const isReady = pin.length === PIN_LENGTH;
 
   return (
-    <main className="min-h-screen bg-white text-slate-900">
-      <div className="mx-auto flex min-h-screen max-w-md flex-col">
+    <PageShell>
+      <div className="flex min-h-screen flex-col">
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
           <button
