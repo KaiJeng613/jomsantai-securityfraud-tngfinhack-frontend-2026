@@ -8,7 +8,7 @@ const vouchers = [
   {
     amount: "RM10",
     label: "Discount Voucher",
-    description: "【Taobao Zone】Taobao: RM10 Discount Voucher(...",
+    description: "[Taobao Zone] Taobao: RM10 Discount Voucher(...",
     price: "9.00",
     points: "50",
     originalPrice: "10.00",
@@ -16,7 +16,7 @@ const vouchers = [
   {
     amount: "RM30",
     label: "Discount Voucher",
-    description: "【Taobao Zone】Taobao: RM30 Discount Voucher(...",
+    description: "[Taobao Zone] Taobao: RM30 Discount Voucher(...",
     price: "28.50",
     points: "50",
     originalPrice: "30.00",
@@ -24,7 +24,7 @@ const vouchers = [
   {
     amount: "RM100",
     label: "Discount Voucher",
-    description: "【Taobao Zone】Taobao: RM100 Discount Voucher(...",
+    description: "[Taobao Zone] Taobao: RM100 Discount Voucher(...",
     price: "95.00",
     points: "100",
     originalPrice: "100.00",
@@ -32,7 +32,7 @@ const vouchers = [
   {
     amount: "RM200",
     label: "Discount Voucher",
-    description: "【Taobao Zone】Taobao: RM200 Discount Voucher(...",
+    description: "[Taobao Zone] Taobao: RM200 Discount Voucher(...",
     price: "190.00",
     points: "200",
     originalPrice: "200.00",
