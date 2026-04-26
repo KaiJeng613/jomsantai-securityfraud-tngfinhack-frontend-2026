@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import PageShell from "@/components/PageShell";
 
@@ -39,6 +40,8 @@ const vouchers = [
 ];
 
 export default function TaobaoPage() {
+  const [showWarning, setShowWarning] = useState(false);
+
   return (
     <PageShell className="bg-white">
       {/* Orange Header */}
@@ -75,10 +78,10 @@ export default function TaobaoPage() {
         {/* Voucher Grid */}
         <div className="grid grid-cols-2 gap-4">
           {vouchers.map((voucher) => (
-            <Link
+            <button
               key={voucher.amount}
-              href="/secure-pin"
-              className="block overflow-hidden rounded-2xl shadow-sm"
+              onClick={() => setShowWarning(true)}
+              className="block overflow-hidden rounded-2xl shadow-sm text-left"
             >
               {/* Orange Card Top */}
               <div className="bg-orange-500 px-4 pb-4 pt-6 text-center text-white">
@@ -103,10 +106,44 @@ export default function TaobaoPage() {
                   MYR {voucher.originalPrice}
                 </p>
               </div>
-            </Link>
+            </button>
           ))}
         </div>
       </div>
+
+      {/* Suspicious Warning Modal */}
+      {showWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+              <span className="text-4xl">🚨</span>
+            </div>
+            <h2 className="mb-2 text-center text-[20px] font-bold text-red-600">
+              Suspicious Transaction detected
+            </h2>
+            <p className="mb-4 text-center text-[14px] leading-relaxed text-slate-600">
+              This Transaction has been flagged as suspicious. Transfer is blocked for this recipient, and the Check & Transfer button will remain disabled.
+            </p>
+            <p className="mb-5 text-center text-[13px] leading-relaxed text-slate-500">
+              Use Secure PIN to confirm that you intentionally opened this recipient and review the warning before leaving the page.
+            </p>
+            <div className="space-y-3">
+              <Link
+                href="/secure-pin"
+                className="block w-full rounded-full bg-[#0b66cb] py-3 text-center text-[15px] font-semibold text-white"
+              >
+                Use Secure PIN
+              </Link>
+              <button
+                onClick={() => setShowWarning(false)}
+                className="w-full rounded-full border border-slate-300 py-3 text-[15px] font-semibold text-slate-600"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </PageShell>
   );
 }
